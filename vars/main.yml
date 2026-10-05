@@ -1,7 +1,7 @@
 ---
 _uv_version_path: "{{ 'latest/download' if uv_version == 'latest' else 'download/' ~ uv_version }}"
 _uv_system_map:
-  Linux: unknown-linux-ngu
+  Linux: unknown-linux-gnu
   Darwin: apple-darwin
 # TODO intel based macs? is anyone still using those?
 _uv_arch: "{{ 'aarch64' if ansible_facts['architecture'] == 'arm64' else ansible_facts['architecture'] }}"

@@ -5,10 +5,17 @@
   changed_when: false
   failed_when: false
 
+- name: Fetch latest release
+  ansible.builtin.uri:
+    url: "{{ uv_latest_version_api_url }}"
+    return_content: true
+  register: uv_latest_release_response
+  when: uv_version == 'latest'
+
 - name: Set current and target version
   ansible.builtin.set_fact:
     uv_current_version: "{{ (uv_check.stdout | regex_search('uv ([0-9]+\\.[0-9]+\\.[0-9]+)', '\\1') | first) if uv_check.rc == 0 else '0.0.0' }}"
-    uv_target_version: "{{ (lookup('ansible.builtin.url', uv_latest_version_api_url) | from_json).tag_name if uv_version == 'latest' else uv_version }}"
+    uv_target_version: "{{ (uv_latest_release_response.content | from_json).tag_name if uv_version == 'latest' else uv_version }}"
 
 - name: Display status
   ansible.builtin.debug:
