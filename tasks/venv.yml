@@ -1,0 +1,55 @@
+---
+- debug: var=venv.environment
+
+- name: Ensure virtualenv is available
+  ansible.builtin.command:
+    cmd: >
+      uv venv {{ venv.path | quote }}
+    creates: "{{ venv.path }}"
+  environment: "{{ venv.environment }}"
+
+- name: Ensure requirements file is available
+  ansible.builtin.copy:
+    dest: "{{ venv.path }}/requirements"
+    content: "{{ venv.requirements }}"
+    mode: "0640"
+  when: "'requirements' in venv"
+  register: req_in
+
+- name: Fetch current installed packages
+  ansible.builtin.command:
+    cmd: >-
+      uv pip freeze
+        --python {{ venv.path }}
+  register: _freeze
+  changed_when: false
+
+- name: Compile requirements
+  ansible.builtin.command:
+    cmd: >-
+      uv pip compile
+        --python {{ venv.path }}
+        {{ venv.path }}/requirements
+        --no-annotate
+        --no-header
+  register: _compiled
+  changed_when: false
+
+- debug: var=_freeze.stdout
+- debug: var=_compiled.stdout
+
+- set_fact:
+    needs_update: "{{ _freeze.stdout != _compiled.stdout }}"
+
+- name: Ensure venv is up-to-date
+  ansible.builtin.command:
+    cmd: >
+      uv pip
+        {{ uv_action }}
+        {{ venv.path }}/requirements
+        --python {{ venv.path }}
+        {{ uv_upgrade_flag }}
+  # when: req_in.changed or req_compile.changed
+  # when: req_in.changed
+  when: needs_update
+  environment: "{{ venv.environment }}"

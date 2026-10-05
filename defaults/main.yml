@@ -1,5 +1,40 @@
 ---
-# https://github.com/astral-sh/uv/releases
-#
-uv_dir: /usr/local/bin
+# Whether to install uv
+uv_install: true
+
+# What version to install. See https://github.com/astral-sh/uv/releases.
+# This is only relevant when uv_install is true.
 uv_version: latest
+
+# The directory where the uv binaries should be put
+uv_dir: /usr/local/bin
+
+# List of virtual environments to set up.
+# Each venv must have at least a path.
+# uv_venvs:
+#   - path: /opt/my_venv
+#     requirements: |
+#       certbot==5.6.0
+#     python: 3.14.2
+#     python_preference: only-managed
+uv_venvs: []
+
+# venv defaults
+_uv_venv_defaults:
+  # 'install' or 'sync'
+  strategy: install
+  upgrade: false
+  environment:
+    UV_PYTHON: python3
+    UV_PYTHON_PREFERENCE: only-system
+    UV_PYTHON_DOWNLOADS: automatic
+
+# This is the merged variable that will be used for the actual
+# venv configurations. This should generally not be changed.
+_uv_venvs: >-
+  {{
+    uv_venvs
+    | map('combine', _uv_venv_defaults, recursive=True)
+    | zip(uv_venvs)
+    | map('combine', recursive=True)
+  }}
