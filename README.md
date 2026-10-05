@@ -9,7 +9,7 @@ https://github.com/astral-sh/uv/releases.
 | variable | description | default |
 | -------- | ----------- | ------- |
 | `uv_dir` | Directory where to put the binaries | `/usr/local/bin` |
-| `uv_version` | Version to install | `latest`. This requires network connectivity to github.com every time |
+| `uv_version` | Version to install | `latest`. This requires network connectivity to github.com every time. Set this to a specific version to avoid this. |
 
 
 # Example playbook
