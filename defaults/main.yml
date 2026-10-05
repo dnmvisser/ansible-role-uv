@@ -1,0 +1,5 @@
+---
+# https://github.com/astral-sh/uv/releases
+#
+uv_dir: /usr/local/bin
+uv_version: latest
