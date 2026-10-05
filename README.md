@@ -1,13 +1,16 @@
 # ansible-role-uv
 
-Ansible role to install uv
+Ansible role to install `uv` binaries through tarballs from
+https://github.com/astral-sh/uv/releases.
 
 
 # Role variables
 
-`uv_dir` - the directory where to put the binaries. Default: `/usr/local/bin`.
-`uv_version` - the version to install. Default: `latest`. This requires network
-connectivity to github.com.
+| variable | description | default |
+| -------- | ----------- | ------- |
+| `uv_dir` | Directory where to put the binaries | `/usr/local/bin` |
+| `uv_version` | Version to install | `latest`. This requires network connectivity to github.com every time |
+
 
 # Example playbook
 
