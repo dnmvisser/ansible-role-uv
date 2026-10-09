@@ -1,0 +1,9 @@
+---
+- name: Ensure venv is removed
+  ansible.builtin.file:
+    path: "{{ venv.path }}"
+    state: absent
+
+- name: Include installed state task file
+  ansible.builtin.include_tasks:
+    file: venv_state_installed.yml

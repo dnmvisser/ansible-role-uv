@@ -1,51 +1,24 @@
 ---
-- name: Try to fetch current uv version
-  ansible.builtin.command: "{{ uv_dir }}/uv --version"
-  register: uv_check
-  changed_when: false
-  failed_when: false
+- name: Include uv installation task file
+  ansible.builtin.include_tasks:
+    file: uv_install.yml
+  when: uv_install
 
-- name: Fetch latest release
-  ansible.builtin.uri:
-    url: "{{ uv_latest_version_api_url }}"
-    return_content: true
-  register: uv_latest_release_response
-  when: uv_version == 'latest'
-
-- name: Set current and target version
-  ansible.builtin.set_fact:
-    uv_current_version: "{{ (uv_check.stdout | regex_search('uv ([0-9]+\\.[0-9]+\\.[0-9]+)', '\\1') | first) if uv_check.rc == 0 else '0.0.0' }}"
-    uv_target_version: "{{ (uv_latest_release_response.content | from_json).tag_name if uv_version == 'latest' else uv_version }}"
-
-- name: Display status
+- name: Skip any unsupported venv states
   ansible.builtin.debug:
-    msg: "uv {{ uv_current_version }}{{ ' (latest)' if uv_version == 'latest' }} is already installed, skipping remaining tasks"
-  when: uv_current_version == uv_target_version
+    msg: |
+      {% for venv in _unsupported_states %}
+      Skipping venv {{ venv.path }}: state '{{ venv.state }}' is unsupported
+      {% endfor %}
+  when: _unsupported_states | length > 0
 
-- name: Ensure uv is available
-  when: uv_current_version != uv_target_version
-  block:
-    - name: "Download tarball from {{ uv_release_url }}"
-      ansible.builtin.get_url:
-        url: "{{ uv_release_url }}"
-        checksum: "sha256:{{ uv_release_url }}.sha256"
-        dest: /tmp/uv.tar.gz
-        mode: "0644"
-
-    - name: "Unarchive binaries in {{ uv_dir }}"
-      ansible.builtin.unarchive:
-        src: /tmp/uv.tar.gz
-        dest: "{{ uv_dir }}"
-        remote_src: true
-        extra_opts:
-          - "--strip-components=1"
-      become: true
-
-    - name: Clean up tarball
-      ansible.builtin.file:
-        path: /tmp/uv.tar.gz
-        state: absent
-
-    - name: Display status
-      ansible.builtin.debug:
-        msg: "Installed uv {{ uv_target_version }}"
+- name: Include venv specific tasks
+  ansible.builtin.include_tasks:
+    file: "venv_state_{{ venv.state }}.yml"
+  loop: "{{ _uv_venvs | selectattr('state', 'in', uv_venv_states) }}"
+  loop_control:
+    loop_var: venv
+    label: "{{ venv.path }}"
+  vars:
+    req_file: "{{ venv.path }}/requirements"
+    req_checksum: "{{ venv.requirements | hash('sha256') }}"

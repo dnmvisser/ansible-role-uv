@@ -7,3 +7,10 @@ _uv_system_map:
 _uv_arch: "{{ 'aarch64' if ansible_facts['architecture'] == 'arm64' else ansible_facts['architecture'] }}"
 uv_latest_version_api_url: https://api.github.com/repos/astral-sh/uv/releases/latest
 uv_release_url: "https://github.com/astral-sh/uv/releases/{{ _uv_version_path }}/uv-{{ _uv_arch }}-{{ _uv_system_map[ansible_facts['system']] }}.tar.gz"
+
+# These are the supported venv states
+uv_venv_states:
+  - installed
+  - reinstalled
+  - synced
+  - upgraded
