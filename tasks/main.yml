@@ -1,13 +1,23 @@
 ---
-- name: Include installation tasks
+- name: Include uv installation task file
   ansible.builtin.include_tasks:
-    file: install.yml
+    file: uv_install.yml
   when: uv_install
 
-- name: Include task files
+- debug: var=_uv_venvs
+
+- name: Skip any unsupported venv states
+  ansible.builtin.debug:
+    msg: |
+      {% for venv in _unsupported_states %}
+      Skipping venv {{ venv.path }}: state '{{ venv.state }}' is unsupported
+      {% endfor %}
+  when: _unsupported_states | length > 0
+
+- name: "Include venv task fil"
   ansible.builtin.include_tasks:
-    file: venv.yml
-  loop: "{{ _uv_venvs }}"
+    file: "venv_state_{{ venv.state }}.yml"
+  loop: "{{ _uv_venvs | selectattr('state', 'in', uv_venv_states) }}"
   loop_control:
     loop_var: venv
     label: "{{ venv.path }}"

@@ -1,4 +1,11 @@
 ---
+- name: Ensure virtualenv is available
+  ansible.builtin.command:
+    cmd: >
+      {{ uv_bin_path }} venv {{ venv.path | quote }}
+    creates: "{{ venv.path }}"
+  environment: "{{ venv.environment }}"
+
 - name: Ensure requirements file is available
   ansible.builtin.copy:
     content: "{{ venv.requirements }}"

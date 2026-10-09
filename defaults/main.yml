@@ -18,6 +18,7 @@ uv_bin_path: "{{ uv_dir ~ '/uv' if uv_install else 'uv' }}"
 # Each venv must have at least a path.
 # uv_venvs:
 #   - path: /opt/my_venv
+#     state: installed
 #     requirements: |
 #       certbot==5.6.0
 #     python: 3.14.2
@@ -41,3 +42,6 @@ _uv_venvs: >-
     | zip(uv_venvs)
     | map('combine', recursive=True)
   }}
+
+# For safety checks
+_unsupported_states: "{{ _uv_venvs | rejectattr('state', 'in' , uv_venv_states) }}"
