@@ -1,5 +1,5 @@
 ---
-- name: Ensure virtualenv is available
+- name: "Ensure virtualenv is available at {{ venv.path }}"
   ansible.builtin.command:
     cmd: >
       {{ uv_bin_path | quote }}
