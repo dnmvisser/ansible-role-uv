@@ -1,0 +1,33 @@
+---
+- name: Ensure requirements file is available
+  ansible.builtin.copy:
+    content: "{{ venv.requirements }}"
+    dest: "{{ req_file }}"
+    mode: "0640"
+  register: _req
+
+- name: Read requirements checksum tracker
+  ansible.builtin.slurp:
+    src: "{{ req_file }}.sha256"
+  register: _tracker_content
+  failed_when: false
+  changed_when: false
+
+- name: Install requirements into virtualenv
+  ansible.builtin.command:
+    cmd: >
+      {{ uv_bin_path | quote }} pip install -r {{ req_file | quote }}
+      --python {{ venv.path | quote }}
+  when: >-
+    _tracker_content.content is not defined
+    or
+    (_tracker_content.content | b64decode | trim) != req_checksum
+  register: _install_result
+  environment: "{{ venv.environment }}"
+
+- name: Update requirements checksum tracker
+  ansible.builtin.copy:
+    content: "{{ req_checksum }}"
+    dest: "{{ req_file }}.sha256"
+    mode: '0644'
+  when: _install_result is changed

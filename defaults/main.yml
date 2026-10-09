@@ -9,6 +9,11 @@ uv_version: latest
 # The directory where the uv binaries should be put
 uv_dir: /usr/local/bin
 
+# The uv that we should use. Default to the binary in the uv_dir
+# if we installed it. Otherwise, whatever is in $PATH.
+# Override this if needed.
+uv_bin_path: "{{ uv_dir ~ '/uv' if uv_install else 'uv' }}"
+
 # List of virtual environments to set up.
 # Each venv must have at least a path.
 # uv_venvs:
@@ -21,9 +26,7 @@ uv_venvs: []
 
 # venv defaults
 _uv_venv_defaults:
-  # 'install' or 'sync'
-  strategy: install
-  upgrade: false
+  state: installed
   environment:
     UV_PYTHON: python3
     UV_PYTHON_PREFERENCE: only-system

@@ -1,6 +1,7 @@
 ---
 - name: Try to fetch current uv version
-  ansible.builtin.command: "{{ uv_dir }}/uv --version"
+  ansible.builtin.command: >
+    {{ uv_bin_path | quote }} --version
   register: uv_check
   changed_when: false
   failed_when: false
@@ -19,7 +20,7 @@
 
 - name: Display status
   ansible.builtin.debug:
-    msg: "uv {{ uv_current_version }}{{ ' (latest)' if uv_version == 'latest' }} is already installed, skipping remaining tasks"
+    msg: "uv {{ uv_current_version }}{{ ' (latest)' if uv_version == 'latest' }} is already installed, skipping remaining installation related tasks"
   when: uv_current_version == uv_target_version
 
 - name: Ensure uv is available

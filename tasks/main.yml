@@ -4,8 +4,6 @@
     file: install.yml
   when: uv_install
 
-- debug: var=_uv_venvs
-
 - name: Include task files
   ansible.builtin.include_tasks:
     file: venv.yml
@@ -14,5 +12,5 @@
     loop_var: venv
     label: "{{ venv.path }}"
   vars:
-    uv_action: "{{ 'sync' if venv.strategy == 'sync' else 'install -r' }}"
-    uv_upgrade_flag: "{{ '--upgrade' if (venv.strategy == 'install' and venv.upgrade) else '' }}"
+    req_file: "{{ venv.path }}/requirements"
+    req_checksum: "{{ venv.requirements | trim | hash('sha256') }}"
