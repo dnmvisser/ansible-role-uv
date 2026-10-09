@@ -1,6 +1,7 @@
 ---
-- name: Import base venv task
-  ansible.builtin.import_tasks: venv_base.yml
+- name: Include venv base task
+  ansible.builtin.include_tasks:
+    file: venv_base.yml
 
 - name: Check for outdated packages in venv
   ansible.builtin.command:
@@ -21,7 +22,7 @@
       pip install
       --upgrade
       --python {{ venv.path | quote }}
-      -r {{ req_file | quote }}
+      --requirements {{ req_file | quote }}
   when: (_uv_outdated.stdout | from_json | length) > 0
   register: _uv_upgraded
   environment: "{{ venv.environment }}"

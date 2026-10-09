@@ -1,6 +1,7 @@
 ---
-- name: Import base venv task
-  ansible.builtin.import_tasks: venv_base.yml
+- name: Include venv base task
+  ansible.builtin.include_tasks:
+    file: venv_base.yml
 
 - name: Read requirements checksum tracker
   ansible.builtin.slurp:
@@ -15,7 +16,7 @@
       {{ uv_bin_path | quote }}
       pip install
       --python {{ venv.path | quote }}
-      -r {{ req_file | quote }}
+      --requirements {{ req_file | quote }}
   when: >-
     _tracker_content.content is not defined
     or
@@ -27,5 +28,5 @@
   ansible.builtin.copy:
     content: "{{ req_checksum }}"
     dest: "{{ req_file }}.sha256"
-    mode: '0644'
+    mode: "0644"
   when: _install_result is changed

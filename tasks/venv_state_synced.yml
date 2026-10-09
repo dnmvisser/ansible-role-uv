@@ -1,6 +1,7 @@
 ---
-- name: Import base venv task
-  ansible.builtin.import_tasks: venv_base.yml
+- name: Include venv base task
+  ansible.builtin.include_tasks:
+    file: venv_base.yml
 
 - name: Check requirements sync status in venv  # noqa no-changed-when
   ansible.builtin.command:
