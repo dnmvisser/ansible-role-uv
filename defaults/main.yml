@@ -44,4 +44,4 @@ _uv_venvs: >-
   }}
 
 # For safety checks
-_unsupported_states: "{{ _uv_venvs | rejectattr('state', 'in' , uv_venv_states) }}"
+_unsupported_states: "{{ _uv_venvs | rejectattr('state', 'in', uv_venv_states) }}"

@@ -1,0 +1,34 @@
+---
+- name: Import base venv task
+  ansible.builtin.import_tasks: venv_base.yml
+
+- name: Check for outdated packages in venv
+  ansible.builtin.command:
+    cmd: >
+      {{ uv_bin_path | quote }}
+      pip list
+      --outdated
+      --python {{ venv.path | quote }}
+      --format=json
+  register: _uv_outdated
+  changed_when: false
+  environment: "{{ venv.environment }}"
+
+- name: Upgrade requirements in venv  # noqa no-changed-when
+  ansible.builtin.command:
+    cmd: >
+      {{ uv_bin_path | quote }}
+      pip install
+      --upgrade
+      --python {{ venv.path | quote }}
+      -r {{ req_file | quote }}
+  when: (_uv_outdated.stdout | from_json | length) > 0
+  register: _uv_upgraded
+  environment: "{{ venv.environment }}"
+
+- name: Update requirements checksum tracker  # noqa no-handler
+  ansible.builtin.copy:
+    content: "{{ req_checksum }}"
+    dest: "{{ req_file }}.sha256"
+    mode: "0644"
+  when: _uv_upgraded is changed

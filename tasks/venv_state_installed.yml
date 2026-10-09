@@ -1,17 +1,6 @@
 ---
-- name: Ensure virtualenv is available
-  ansible.builtin.command:
-    cmd: >
-      {{ uv_bin_path }} venv {{ venv.path | quote }}
-    creates: "{{ venv.path }}"
-  environment: "{{ venv.environment }}"
-
-- name: Ensure requirements file is available
-  ansible.builtin.copy:
-    content: "{{ venv.requirements }}"
-    dest: "{{ req_file }}"
-    mode: "0640"
-  register: _req
+- name: Import base venv task
+  ansible.builtin.import_tasks: venv_base.yml
 
 - name: Read requirements checksum tracker
   ansible.builtin.slurp:
@@ -20,11 +9,13 @@
   failed_when: false
   changed_when: false
 
-- name: Install requirements into virtualenv
+- name: Install requirements into virtualenv  # noqa no-changed-when
   ansible.builtin.command:
     cmd: >
-      {{ uv_bin_path | quote }} pip install -r {{ req_file | quote }}
+      {{ uv_bin_path | quote }}
+      pip install
       --python {{ venv.path | quote }}
+      -r {{ req_file | quote }}
   when: >-
     _tracker_content.content is not defined
     or
@@ -32,7 +23,7 @@
   register: _install_result
   environment: "{{ venv.environment }}"
 
-- name: Update requirements checksum tracker
+- name: Update requirements checksum tracker  # noqa no-handler
   ansible.builtin.copy:
     content: "{{ req_checksum }}"
     dest: "{{ req_file }}.sha256"
